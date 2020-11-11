@@ -11,8 +11,6 @@ static Main main_class{};
 // --------------------------------------------------------------------------------
 extern "C" void app_main(void)
 {
-    main_class.init_leds();
-
     ESP_LOGD(LOG_TAG, "Creating default event loop");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
@@ -65,7 +63,7 @@ void Main::run(void)
 #else
 
     // Main user run code
-
+    vTaskDelay(portMAX_DELAY);
 #endif
 }
 

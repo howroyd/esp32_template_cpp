@@ -12,8 +12,6 @@
 #include "esp_event.h"
 #include "nvs_flash.h"
 
-#include "cJSON.h"
-
 #include "Ble.h"
 #include "SntpTime.h"
 
