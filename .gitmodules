@@ -1,0 +1,15 @@
+[submodule "application/esp32_wifi"]
+	path = application/esp32_wifi
+	url = https://github.com/howroyd/esp32_wifi.git
+[submodule "application/esp32_bt"]
+	path = application/esp32_bt
+	url = https://github.com/howroyd/esp32_bt.git
+[submodule "application/esp32_ble"]
+	path = application/esp32_ble
+	url = https://github.com/howroyd/esp32_ble.git
+[submodule "application/esp32_i2c"]
+	path = application/esp32_i2c
+	url = https://github.com/howroyd/esp32_i2c.git
+[submodule "application/esp32_gpio"]
+	path = application/esp32_gpio
+	url = https://github.com/howroyd/esp32_gpio.git
