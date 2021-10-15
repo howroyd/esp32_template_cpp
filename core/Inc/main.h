@@ -1,38 +1,89 @@
+#pragma once
+#include "my_warnings.h"
+
+SUPPRESS_WARN_BEGIN
 #include <chrono>
 #include <cstdlib>
-
-#pragma once
+#include <string_view>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#define pdSECOND pdMS_TO_TICKS(1000)
+#undef pdSECOND
+#define pdSECOND configTICK_RATE_HZ
+#undef pdMAX
+#define pdMAX 0xffffffffUL
 
-#include "driver/gpio.h"
-
+#include "esp_err.h"
 #include "esp_event.h"
 #include "nvs_flash.h"
-
-#include "Ble.h"
-#include "SntpTime.h"
+SUPPRESS_WARN_END
 
 // --------------------------------------------------------------------------------------------------------------------
 class Main final // To ultimately become the co-ordinator if deemed necessary
 {
+    constexpr static
+    std::size_t stack_size{2048};
+    constexpr static
+    const char* const name{"MAIN"}, *const tag{name};
+    constexpr static
+    TickType_t loop_delay{pdSECOND};
+
 public:
-    constexpr Main(void) {}
+    constexpr Main(void) noexcept {}
 
-    [[nodiscard]] bool setup(void);
-    void run(void);
+    esp_err_t init(void)
+    {
+        if (not h_task)
+        {
+            h_task = xTaskCreateStatic(
+                      task,
+                      name,
+                      stack_size,
+                      this,
+                      5,
+                      stack,
+                      &task_tcb);
+            if (h_task)
+                return ESP_OK;
+            return ESP_ERR_NO_MEM;
+        }
+        return
+            ESP_ERR_INVALID_STATE;
+    }
 
-    [[nodiscard]] esp_err_t start_all_tasks(void);
+private:
+    [[nodiscard]] static
+    bool setup(Main& main);
 
-    static Bt_Le::Ble &ble;
-    static SNTP::Sntp &sntp;
+    static
+    void loop(Main& main);
 
-#if defined(MEMORY_DEBUGGING)
-    void log_mem(void);
-#endif
+    [[noreturn,gnu::nonnull]] static
+    void task(void* p_main)
+    {
+        Main& main{*reinterpret_cast<Main*>(p_main)};
+
+        while (not setup(main))
+            vTaskDelay(pdSECOND);
+
+        while (true)
+        {
+            loop(main);
+            vTaskDelay(loop_delay);
+        }
+    }
+
+    [[nodiscard]] static
+    esp_err_t start_all_tasks(void);
+
+    static StaticTask_t task_tcb;
+    static StackType_t  stack[stack_size];
+    static TaskHandle_t h_task;
 }; // class Main
+
+inline StaticTask_t Main::task_tcb{};
+inline StackType_t  Main::stack[stack_size]{};
+inline TaskHandle_t Main::h_task{nullptr};
 
 // --------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------
